@@ -15,6 +15,7 @@
 	<description>Projeto criado na disciplina</description>
 	<properties>
 		<java.version>11</java.version>
+		<start-class>br.edu.iftm.MeuAPP.MeuAppApplication</start-class>	
 	</properties>
 	<dependencies>
 		<dependency>

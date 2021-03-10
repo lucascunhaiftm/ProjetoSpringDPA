@@ -1,0 +1,12 @@
+ARG MVN_BUILDER
+### Stage 1 - BUILD image
+FROM $MVN_BUILDER as builder
+COPY src /build/src
+RUN mvn clean package -PLOCAL
+
+### Stage 2 - Deploy Jar
+FROM openjdk:8
+RUN mkdir -p /build
+COPY --from=builder /build/target/*.jar /build/app.jar
+EXPOSE 8080  
+ENTRYPOINT ["java","-jar","build/app.jar"] 
