@@ -1,29 +1,57 @@
-version: '3.7'
+version: '3'
 services:
-  dev:
-    image: imgname
-    container_name: nomecont2
+  db-service:
+    image: mysql:5.6
+    container_name: cont_db-service
+    ports:
+      - 3307:3306
+    restart: always
+    environment:
+      MYSQL_DATABASE : bancoapp
+      MYSQL_USER : user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - ./db-data:/var/lib/mysql
+    networks:
+      - backend 
+  backend_service:
+    image: meuappbackendimg
+    container_name: cont_backend_service
     ports:
       - '8080:8080'
+      - "8000:8000"
+    depends_on: 
+      - db-service # This service depends on mysql. Start that first.
+    networks: # Networks to join (Services on the same network can communicate with each other using their name)
+      - backend
     volumes:
       - './src:/build/src'
       - './db:/build/db'
       - './target:/build/target'
       - './logs:/build/logs'
-    command: 'mvn spring-boot:run -Drun.jvmArguments="-Xmx512m" -Dmaven.test.skip=true'
-  deploy:
-    build:
-      context: .
-      dockerfile: Dockerfile-Deploy
-      args:
-        MVN_BUILDER: '${MVN_BUILDER}'
-    image: '${DEPLOYMENT_IMAGE}'
-    container_name: '${CONTAINER_NAME}'
-    ports:
-      - '8080:8080'
+    command: 'mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=*:8000" -Dmaven.test.skip=true'
+#  deploy:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile-Deploy
+#      args:
+#        MVN_BUILDER: '${MVN_BUILDER}'
+#    image: '${DEPLOYMENT_IMAGE}'
+#    container_name: '${CONTAINER_NAME}'
+#    ports:
+#      - '8080:8080'
   maven:
     build:
       context: .
       dockerfile: Dockerfile
-    image: imgname
-    container_name: nomecont1
+    image: meuappbackendimg
+    container_name: contbuild
+
+# Volumes
+volumes:
+  db-data:
+
+# Networks to be created to facilitate communication between containers
+networks:
+  backend: 
